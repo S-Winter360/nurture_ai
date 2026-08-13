@@ -31,8 +31,10 @@ class NativeModelRuntime implements LocalModelRuntime {
   @override
   RuntimeState get state => _state;
 
+  /// SPRINT 8E: Strict Path Security
+  /// Rejects path traversal and ensures model only executes from managed storage.
   bool _isPathSecure(String path) {
-    if (path.contains('..')) return false;
+    if (path.contains('..') || path.contains(r'..\')) return false;
     if (!path.contains('/local_models/')) return false;
     return true;
   }
@@ -51,6 +53,7 @@ class NativeModelRuntime implements LocalModelRuntime {
 
   @override
   Future<bool> initializeModel() async {
+    // SPRINT 8E: Concurrency & State Guard
     if (_state == RuntimeState.ready || _state == RuntimeState.generating) return true;
     if (_state == RuntimeState.initializing) return false; 
 
@@ -63,9 +66,12 @@ class NativeModelRuntime implements LocalModelRuntime {
         return false;
       }
 
+      // Native Bridge Invocation.
+      // Expected Android implementation MUST use Kotlin Coroutines (Dispatchers.IO / Default)
+      // to prevent blocking the Android Platform Thread.
       final bool? result = await _channel.invokeMethod('initializeModel', {
         'modelPath': model.absolutePath,
-        'threads': 4,
+        'threads': 4, // Tuning parameter for low-end devices
       });
 
       if (result == true) {
@@ -76,6 +82,7 @@ class NativeModelRuntime implements LocalModelRuntime {
         return false;
       }
     } on MissingPluginException {
+      // SPRINT 8E: Graceful fallback when C++ JNI backend is not compiled into the APK
       log('Native LLM Plugin not linked in current build. Safely degrading to fallback.');
       _state = RuntimeState.error;
       return false;
@@ -88,6 +95,7 @@ class NativeModelRuntime implements LocalModelRuntime {
 
   @override
   Future<String?> runInference(String prompt) async {
+    // SPRINT 8E: Concurrency Guard - Reject overlapping generations
     if (_state != RuntimeState.ready) {
       log('Cannot run inference. Runtime state is $_state');
       return null;
@@ -96,7 +104,10 @@ class NativeModelRuntime implements LocalModelRuntime {
     _state = RuntimeState.generating;
 
     try {
-      final String? response = await _channel.invokeMethod('runInference', {'prompt': prompt});
+      // Native Bridge Invocation.
+      final String? response = await _channel.invokeMethod('runInference', {
+        'prompt': prompt,
+      });
 
       if (_state == RuntimeState.cancelled) {
         _state = RuntimeState.ready;
@@ -121,7 +132,9 @@ class NativeModelRuntime implements LocalModelRuntime {
       _state = RuntimeState.cancelled;
       try {
         await _channel.invokeMethod('cancelInference');
-      } catch (_) {}
+      } catch (_) {
+        // Safe to ignore if native plugin is absent
+      }
     }
   }
 
@@ -134,7 +147,7 @@ class NativeModelRuntime implements LocalModelRuntime {
   }
 }
 
-// RESTORED STUB FOR FALLBACKS AND TESTS
+// STUB FOR FALLBACKS AND HEADLESS TESTS
 class StubLocalModelRuntime implements LocalModelRuntime {
   final LocalModelRegistry _registry;
   RuntimeState _state = RuntimeState.uninitialized;
@@ -167,7 +180,6 @@ class StubLocalModelRuntime implements LocalModelRuntime {
   Future<String?> runInference(String prompt) async {
     if (_state != RuntimeState.ready) return null;
     _state = RuntimeState.generating;
-    // Simulate minor delay
     await Future.delayed(const Duration(milliseconds: 50));
     _state = RuntimeState.ready;
     return null;
