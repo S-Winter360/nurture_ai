@@ -1,0 +1,14 @@
+[
+  {
+    "chunk_id": "ghs_sm_2019_anc_overview",
+    "section": "Antenatal Care 8-Contact Schedule",
+    "text": "The Ghana Health Service adopts the 8-contact ANC model. Contacts are recommended at Weeks 12, 20, 26, 30, 34, 36, 38, and 40. Essential components include maternal assessment, blood pressure check, iron and folic acid supplementation, and malaria prophylaxis.",
+    "keywords": ["anc", "antenatal", "contact", "schedule", "pregnancy", "weeks", "iron", "folic"]
+  },
+  {
+    "chunk_id": "ghs_sm_2019_iptp_malaria",
+    "section": "IPTp Malaria Prophylaxis in Ghana",
+    "text": "Intermittent Preventive Treatment in pregnancy (IPTp) using Sulfadoxine-Pyrimethamine (SP) is administered to all pregnant women in Ghana starting in early second trimester (Week 16) at monthly intervals, with at least 3-5 doses given before delivery.",
+    "keywords": ["iptp", "malaria", "sp", "prophylaxis", "pregnancy", "sulfadoxine", "pyrimethamine"]
+  }
+]

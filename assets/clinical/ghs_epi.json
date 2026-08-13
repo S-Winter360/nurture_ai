@@ -1,0 +1,14 @@
+[
+  {
+    "chunk_id": "ghs_epi_2023_early_doses",
+    "section": "Routine Early Childhood Immunizations",
+    "text": "At birth: BCG and OPV 0. At 6 weeks: Pentavalent 1, OPV 1, PCV 1, Rotavirus 1. At 10 weeks: Pentavalent 2, OPV 2, PCV 2, Rotavirus 2. At 14 weeks: Pentavalent 3, OPV 3, PCV 3, IPV.",
+    "keywords": ["vaccine", "immunization", "penta", "opv", "pcv", "rotavirus", "bcg", "ipv", "weeks"]
+  },
+  {
+    "chunk_id": "ghs_epi_2023_late_doses",
+    "section": "Nine and Eighteen Month Childhood Vaccines",
+    "text": "At 9 months: Measles-Rubella 1, Yellow Fever, and Malaria Dose 1 (in approved regions). At 18 months: Meningitis A (MenA) and Measles-Rubella 2.",
+    "keywords": ["measles", "rubella", "yellow fever", "mena", "meningitis", "months", "vaccine"]
+  }
+]
