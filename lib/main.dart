@@ -9,7 +9,7 @@ import 'package:firebase_core/firebase_core.dart'; // Added Firebase Core import
 
 // Imports
 import 'theme/app_theme.dart';
-import 'providers/data_providers.dart';
+import 'providers/data_providers.dart'  ;
 import 'services/notifications/notification_payload.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
