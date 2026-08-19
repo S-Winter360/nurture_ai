@@ -244,7 +244,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primary,
+      backgroundColor: AppTheme.surface, // Clean white background for the horizontal logo
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -253,19 +253,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                  child: ClipOval(
-                    child: const bool.fromEnvironment('dart.vm.product')
-                        ? Image.asset('assets/logo.png', width: 96, height: 96, fit: BoxFit.cover)
-                        : const Icon(Icons.favorite_rounded, size: 64, color: AppTheme.primary),
-                  ),
+                // Display the horizontal logo gracefully
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                  child: const bool.fromEnvironment('dart.vm.product')
+                      ? Image.asset('assets/logo_horizontal.png', fit: BoxFit.contain)
+                      : const Icon(Icons.favorite_rounded, size: 64, color: AppTheme.primary),
                 ),
-                const SizedBox(height: 24),
-                Text('NurtureAI', style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white)),
-                const SizedBox(height: 8),
-                Text('Your Healthcare Companion', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white70)),
+                const SizedBox(height: 16),
+                Text('Your Healthcare Companion', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary)),
               ],
             ),
           ),
