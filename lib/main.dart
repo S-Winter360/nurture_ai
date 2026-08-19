@@ -268,5 +268,5 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
         ),
       ),
     );
-  }                                     
+  }
 }
