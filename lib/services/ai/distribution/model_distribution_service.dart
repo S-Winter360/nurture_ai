@@ -3,7 +3,7 @@ import '../../../repositories/settings_repository.dart';
 import '../device_capability_service.dart';
 import '../local_model_registry.dart';
 import '../model_import_service.dart';
-import '../local_model_descriptor.dart'; // <--- FIXED MISSING IMPORT
+import '../local_model_descriptor.dart'; 
 import 'model_catalog_service.dart';
 import 'model_download_service.dart';
 
@@ -28,17 +28,20 @@ class ModelDistributionService {
   final DeviceCapabilityService _capabilityService;
   final LocalModelRegistry _registry;
   final ModelImportService _importService;
+  final Future<bool> Function()? _isOnlineOverride; // ADDED FOR TESTING
 
   DistributionStatus _currentStatus = DistributionStatus(DistributionState.idle, '');
 
   ModelDistributionService(
     this._settingsRepo, this._catalogService, this._downloadService,
     this._capabilityService, this._registry, this._importService,
-  );
+    {Future<bool> Function()? isOnlineOverride}
+  ) : _isOnlineOverride = isOnlineOverride;
 
   DistributionStatus get currentStatus => _currentStatus;
 
   Future<bool> _isOnline() async {
+    if (_isOnlineOverride != null) return await _isOnlineOverride!(); // TEST BYPASS
     try {
       final result = await InternetAddress.lookup('google.com');
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
@@ -112,7 +115,7 @@ class ModelDistributionService {
 
     try { await tempFile.delete(); } catch (_) {}
 
-    if (importResult.status == ModelStatus.valid) { // Requires ModelStatus from local_model_descriptor
+    if (importResult.status == ModelStatus.valid) {
       yield _updateState(DistributionState.completed, 'Model updated successfully.');
     } else {
       yield _updateState(DistributionState.downloadFailed, 'Validation failed: ${importResult.message}');

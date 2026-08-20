@@ -8,7 +8,6 @@ import 'package:nurture_ai/services/ai/distribution/model_download_service.dart'
 import 'package:nurture_ai/services/ai/distribution/model_distribution_service.dart';
 import 'package:nurture_ai/repositories/settings_repository.dart';
 
-// Mock dependencies
 class MockSettingsRepo extends SettingsRepository {
   @override
   Future<String?> getSetting(String key) async => 'manual_only';
@@ -17,7 +16,7 @@ class MockSettingsRepo extends SettingsRepository {
 class MockDownloadService extends ModelDownloadService {
   @override
   Future<File?> downloadModelStream(String url, String fileName, Function(double) onProgress) async {
-    return null; // Mock failing/offline download
+    return null; 
   }
 }
 
@@ -50,6 +49,8 @@ void main() {
         DeviceCapabilityService(availableRamMb: 4096),
         LocalModelRegistry(),
         ModelImportService(LocalModelRegistry(), DeviceCapabilityService()),
+        // Default mock is online for other tests
+        isOnlineOverride: () async => true,
       );
     });
 
@@ -74,28 +75,35 @@ void main() {
     });
 
     test('8. Offline mode entirely skips download securely', () async {
-      // Stream yields offline state immediately without throwing errors
-      final statuses = await distService.checkForUpdatesAndDownload(isManualTrigger: true).toList();
+      // MOCK OFFLINE INJECTION: Forces offline state for this specific test
+      final offlineService = ModelDistributionService(
+        MockSettingsRepo(), MockCatalogService(), MockDownloadService(),
+        DeviceCapabilityService(availableRamMb: 4096),
+        LocalModelRegistry(),
+        ModelImportService(LocalModelRegistry(), DeviceCapabilityService()),
+        isOnlineOverride: () async => false, // Forces Offline!
+      );
+
+      final statuses = await offlineService.checkForUpdatesAndDownload(isManualTrigger: true).toList();
       expect(statuses.any((s) => s.state == DistributionState.offline), isTrue);
     });
 
     test('10. Manual-only policy prevents automatic startup download', () async {
       final statuses = await distService.checkForUpdatesAndDownload(isManualTrigger: false).toList();
-      // Should exit quickly due to policy
       expect(statuses.any((s) => s.state == DistributionState.idle), isTrue);
     });
 
     test('16. Failed download is captured gracefully and cleans up', () async {
-      // Will yield offline because test env lacks internet, proving safe fallback
+      // MockDownloadService returns null, resulting in downloadFailed
       final stream = distService.checkForUpdatesAndDownload(isManualTrigger: true);
       final list = await stream.toList();
       final finalState = list.last;
       
-      expect(finalState.state == DistributionState.offline || finalState.state == DistributionState.downloadFailed, isTrue);
+      expect(finalState.state == DistributionState.downloadFailed, isTrue);
     });
 
     test('28 & 29. Firebase and Patient Data Isolation', () {
-      final code = distService.runtimeType.toString(); // <--- FIXED
+      final code = distService.runtimeType.toString();
       expect(code.contains('Firebase'), isFalse);
       expect(code.contains('UserRepository'), isFalse);
       expect(code.contains('ChildRepository'), isFalse);
