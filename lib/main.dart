@@ -244,7 +244,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.surface, // Clean white background for the horizontal logo
+      backgroundColor: AppTheme.surface, 
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -253,12 +253,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Display the horizontal logo gracefully
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                  child: const bool.fromEnvironment('dart.vm.product')
-                      ? Image.asset('assets/logo_horizontal.png', fit: BoxFit.contain)
-                      : const Icon(Icons.favorite_rounded, size: 64, color: AppTheme.primary),
+                  // FIXED: Removed the Release Mode restriction. Added safe error fallback.
+                  child: Image.asset(
+                    'assets/logo_horizontal.png', 
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                       // If filename is wrong, falls back to heart safely
+                       return const Icon(Icons.favorite_rounded, size: 64, color: AppTheme.primary);
+                    },
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text('Your Healthcare Companion', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary)),
