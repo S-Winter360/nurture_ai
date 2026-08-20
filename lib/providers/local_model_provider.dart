@@ -4,24 +4,49 @@ import '../services/ai/local_model_descriptor.dart';
 import '../services/ai/local_model_registry.dart';
 import '../services/ai/model_import_service.dart';
 import '../services/ai/device_capability_service.dart';
-import '../services/ai/model_file_picker_service.dart'; // NEW
+import '../services/ai/model_file_picker_service.dart';
+import '../services/ai/distribution/model_catalog_service.dart';
+import '../services/ai/distribution/model_download_service.dart';
+import '../services/ai/distribution/model_distribution_service.dart';
+import 'data_providers.dart';
 
 final localModelRegistryProvider = Provider((ref) => LocalModelRegistry());
-
 final modelFilePickerServiceProvider = Provider((ref) => ModelFilePickerService());
+
+// <--- FIXED: Added missing capability provider
+final deviceCapabilityProvider = Provider((ref) => DeviceCapabilityService());
 
 final modelImportServiceProvider = Provider((ref) {
   return ModelImportService(
     ref.read(localModelRegistryProvider),
-    DeviceCapabilityService(),
+    ref.read(deviceCapabilityProvider),
   );
+});
+
+final modelCatalogServiceProvider = Provider((ref) => ModelCatalogService());
+final modelDownloadServiceProvider = Provider((ref) => ModelDownloadService());
+
+final modelDistributionServiceProvider = Provider((ref) {
+  return ModelDistributionService(
+    ref.read(settingsRepositoryProvider),
+    ref.read(modelCatalogServiceProvider),
+    ref.read(modelDownloadServiceProvider),
+    ref.read(deviceCapabilityProvider),
+    ref.read(localModelRegistryProvider),
+    ref.read(modelImportServiceProvider),
+  );
+});
+
+final modelDistributionStateProvider = StreamProvider<DistributionStatus>((ref) {
+  final service = ref.read(modelDistributionServiceProvider);
+  return service.checkForUpdatesAndDownload(isManualTrigger: true);
 });
 
 class LocalModelState {
   final ModelStatus status;
   final String message;
   final LocalModelDescriptor? descriptor;
-  final double? importProgress; // Placeholder for future byte-stream percentage
+  final double? importProgress; 
 
   LocalModelState({required this.status, this.message = '', this.descriptor, this.importProgress});
 }
@@ -44,7 +69,6 @@ class LocalModelNotifier extends AsyncNotifier<LocalModelState> {
     return LocalModelState(status: ModelStatus.notInstalled, message: 'No model installed.');
   }
 
-  /// Complete production file import workflow connecting UI, Native File System, and Validation
   Future<void> startImportWorkflow(String manifestJson) async {
     final picker = ref.read(modelFilePickerServiceProvider);
     
@@ -53,7 +77,6 @@ class LocalModelNotifier extends AsyncNotifier<LocalModelState> {
     final pickerResult = await picker.pickModelFile();
     
     if (pickerResult.userCanceled) {
-      // Revert to previous safe state
       state = AsyncValue.data(await build());
       return;
     }

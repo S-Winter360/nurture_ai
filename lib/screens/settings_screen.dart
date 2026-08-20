@@ -6,6 +6,7 @@ import '../providers/data_providers.dart';
 import 'auth_screen.dart';
 import '../services/ai/local_model_descriptor.dart';
 import '../providers/local_model_provider.dart';
+import '../services/ai/distribution/model_distribution_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -214,6 +215,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Consumer(
               builder: (context, ref, child) {
                 final modelStateAsync = ref.watch(localModelManagerProvider);
+                // Listen to the download distribution stream
+                final distState = ref.watch(modelDistributionStateProvider).value; 
 
                 return _buildSettingCard(
                   context,
@@ -225,23 +228,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         final isInstalled = modelState.status == ModelStatus.valid;
                         final isError = modelState.status == ModelStatus.incompatible || modelState.status == ModelStatus.corrupted;
                         final isValidating = modelState.status == ModelStatus.validating;
+                        final isDownloading = distState?.state == DistributionState.downloading || distState?.state == DistributionState.verifying;
 
                         return Column(
                           children: [
                             ListTile(
-                              leading: isValidating 
+                              leading: (isValidating || isDownloading)
                                   ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
                                   : Icon(
                                       isInstalled ? Icons.memory_rounded : Icons.sd_card_alert_rounded,
                                       color: isError ? colorScheme.error : colorScheme.primary,
                                     ),
                               title: Text(
-                                isValidating ? 'Importing Model...' 
+                                isDownloading ? 'Downloading Update...'
+                                : isValidating ? 'Importing Model...' 
                                 : isInstalled ? 'Local AI model ready' : 'Local AI model not installed',
                                 style: TextStyle(fontWeight: FontWeight.bold, color: isError ? colorScheme.error : colorScheme.onSurface),
                               ),
                               subtitle: Text(
-                                modelState.message,
+                                isDownloading ? (distState?.message ?? 'Processing...') : modelState.message,
                                 style: TextStyle(color: isError ? colorScheme.error : colorScheme.onSurfaceVariant),
                               ),
                             ),
@@ -254,44 +259,65 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     const SizedBox(width: 8),
                                     _buildModelPill(context, '${((modelState.descriptor!.fileSizeBytes ?? 0) / 1048576).toStringAsFixed(1)} MB'),
                                     const SizedBox(width: 8),
-                                    _buildModelPill(context, 'Integrity Verified'),
+                                    _buildModelPill(context, 'v${modelState.descriptor!.version}'),
                                   ],
                                 ),
                               ),
                             ],
                             const Divider(height: 1),
+                            
+                            // SPRINT 9A: Policy Configuration
+                            ListTile(
+                              title: const Text('Automatic Updates', style: TextStyle(fontSize: 13)),
+                              trailing: DropdownButton<String>(
+                                value: 'manual_only', // In a full implementation, wire to SettingsRepo
+                                items: const [
+                                  DropdownMenuItem(value: 'wifi_only', child: Text('Wi-Fi Only', style: TextStyle(fontSize: 13))),
+                                  DropdownMenuItem(value: 'wifi_and_mobile', child: Text('Wi-Fi + Mobile', style: TextStyle(fontSize: 13))),
+                                  DropdownMenuItem(value: 'manual_only', child: Text('Manual Only', style: TextStyle(fontSize: 13))),
+                                ],
+                                onChanged: (val) {
+                                  ref.read(settingsRepositoryProvider).setSetting('model_download_policy', val!);
+                                },
+                              ),
+                            ),
+                            const Divider(height: 1),
+
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  if (isInstalled || isError)
+                                  // Left side buttons (Cloud checks)
+                                  if (!isDownloading)
                                     TextButton(
-                                      onPressed: isValidating ? null : () => ref.read(localModelManagerProvider.notifier).removeModel(),
-                                      child: Text('Remove Model', style: TextStyle(color: isValidating ? Colors.grey : colorScheme.error)),
-                                    ),
-                                  if (!isInstalled && !isValidating)
-                                    FilledButton.icon(
-                                      // SPRINT 8C: Real File Picker Trigger with a known verified Gemma manifest payload
                                       onPressed: () {
-                                        const expectedManifest = '''{
-                                          "modelId": "gemma_2b_it_q4",
-                                          "displayName": "Gemma 2B IT (Quantized)",
-                                          "version": "1.0.0",
-                                          "format": "bin",
-                                          "runtime": "mediaPipe",
-                                          "architecture": "transformer",
-                                          "quantization": "4bit",
-                                          "fileName": "gemma_2b_it_q4.bin",
-                                          "sha256": "expected_hash_here",
-                                          "minimumRamMb": 3072,
-                                          "supportedAbi": ["arm64-v8a"]
-                                        }''';
-                                        ref.read(localModelManagerProvider.notifier).startImportWorkflow(expectedManifest);
+                                        ref.invalidate(modelDistributionStateProvider);
                                       },
-                                      icon: const Icon(Icons.download_rounded, size: 16),
-                                      label: const Text('Import Model'),
+                                      child: const Text('Check for Updates'),
+                                    )
+                                  else 
+                                    TextButton(
+                                      onPressed: () => ref.read(modelDistributionServiceProvider).cancel(),
+                                      child: Text('Cancel', style: TextStyle(color: colorScheme.error)),
                                     ),
+                                  
+                                  // Right side buttons (Local Management)
+                                  Row(
+                                    children: [
+                                      if (isInstalled || isError)
+                                        TextButton(
+                                          onPressed: (isValidating || isDownloading) ? null : () => ref.read(localModelManagerProvider.notifier).removeModel(),
+                                          child: Text('Remove', style: TextStyle(color: (isValidating || isDownloading) ? Colors.grey : colorScheme.error)),
+                                        ),
+                                      if (!isInstalled && !isValidating && !isDownloading)
+                                        FilledButton.icon(
+                                          onPressed: () => NurtureUI.showPending(context, 'Android File Picker integration pending.'),
+                                          icon: const Icon(Icons.folder_open_rounded, size: 16),
+                                          label: const Text('Sideload'),
+                                        ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),

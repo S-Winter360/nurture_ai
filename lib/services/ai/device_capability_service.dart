@@ -1,16 +1,31 @@
 import 'local_model_descriptor.dart';
 
+class DeviceCapabilityResult {
+  final bool compatible;
+  final List<String> reasons;
+
+  DeviceCapabilityResult({required this.compatible, this.reasons = const []});
+}
+
 class DeviceCapabilityService {
-  // In a production environment with a native channel, these would be queried dynamically.
-  // For Sprint 8B architectural feasibility, we establish the limits conceptually.
   final int _availableRamMb;
   final String _deviceAbi;
+  final int _simulatedAvailableStorageMb; 
 
   DeviceCapabilityService({
-    int availableRamMb = 4096, // Simulated Mid-Range Device
+    int availableRamMb = 4096, 
     String deviceAbi = 'arm64-v8a',
+    int simulatedAvailableStorageMb = 5000, 
   })  : _availableRamMb = availableRamMb,
-        _deviceAbi = deviceAbi;
+        _deviceAbi = deviceAbi,
+        _simulatedAvailableStorageMb = simulatedAvailableStorageMb;
+
+  // NEW SPRINT 9A: Storage Verification
+  bool hasSufficientStorage(int requiredBytes) {
+    final requiredMb = requiredBytes / (1024 * 1024);
+    // Requires the model size + 50% safety buffer for copying/extracting operations
+    return _simulatedAvailableStorageMb >= (requiredMb * 1.5);
+  }
 
   DeviceCapabilityResult checkCapabilities(LocalModelDescriptor manifest) {
     final reasons = <String>[];
