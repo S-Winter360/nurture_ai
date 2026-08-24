@@ -31,9 +31,19 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^3.0.1
   sqflite_common_ffi: ^2.3.3
+  flutter_launcher_icons: ^0.13.1 # <--- ADD THIS HERE
 
 flutter:
   uses-material-design: true
   assets:
     - assets/
     - assets/clinical/
+
+# --- ADD THIS BLOCK AT THE VERY BOTTOM ---
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/logo.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#0F766E" # Matches your NurtureAI Teal
+  adaptive_icon_foreground: "assets/logo.png"
