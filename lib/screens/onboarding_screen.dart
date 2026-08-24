@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
-import '../utils/nurture_illustrations.dart';
 import '../providers/data_providers.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -22,19 +20,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       'showEyebrow': true,
       'title': 'Welcome to NurtureAI',
       'body': 'Your trusted companion for maternal and child care — built for families in Northern Ghana.',
-      'svg': NurtureIllustrations.onboardingWelcome,
+      'image': 'assets/onboarding_1.png',
     },
     {
       'showEyebrow': false,
       'title': 'Stay on track',
       'body': 'Keep up with appointments, vaccinations, medicines and important milestones — all in one calm place.',
-      'svg': NurtureIllustrations.onboardingTrack,
+      'image': 'assets/onboarding_2.png',
     },
     {
       'showEyebrow': false,
       'title': 'Care, even offline',
       'body': 'Access essential health guidance even when internet connectivity is limited.',
-      'svg': NurtureIllustrations.onboardingOffline,
+      'image': 'assets/onboarding_3.png',
     },
   ];
 
@@ -67,6 +65,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // SKIP BUTTON
             Align(
               alignment: Alignment.topRight,
               child: Padding(
@@ -77,6 +76,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
             ),
+            
+            // PAGE CONTENT
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -88,7 +89,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 28.0),
                     child: Column(
                       children: [
-                        Expanded(child: Center(child: SvgPicture.string(page['svg'] as String, width: MediaQuery.of(context).size.width * 0.75, fit: BoxFit.contain))),
+                        // MAIN ILLUSTRATION
+                        Expanded(
+                          child: Center(
+                            child: Image.asset(
+                              page['image'] as String,
+                              width: MediaQuery.of(context).size.width * 0.85,
+                              fit: BoxFit.contain,
+                              cacheWidth: 800, // <--- FIX: Forces Flutter to shrink huge AI images in RAM!
+                              errorBuilder: (context, error, stackTrace) {
+                                // If the image is still too big or missing, show a grey icon instead of crashing
+                                return const Icon(Icons.image_not_supported_rounded, size: 64, color: Colors.grey);
+                              }
+                            ),
+                          ),
+                        ),
+                        
+                        // TEXT BLOCK
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -107,6 +124,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 },
               ),
             ),
+            
+            // BOTTOM DOTS AND BUTTON
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 28.0),
               child: Column(
@@ -143,7 +162,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SvgPicture.string(NurtureIllustrations.logoMark, height: 13, width: 13),
+          ClipOval(
+            child: Image.asset(
+              'assets/logo.png', 
+              height: 16, 
+              width: 16, 
+              fit: BoxFit.cover,
+              cacheWidth: 100, // <--- FIX: Shrinks the logo in RAM too
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.favorite, size: 12),
+            ),
+          ),
           const SizedBox(width: 6),
           Text('NurtureAI', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onPrimaryContainer, letterSpacing: 0, fontSize: 11.5)),
         ],

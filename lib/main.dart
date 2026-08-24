@@ -259,6 +259,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                   child: Image.asset(
                     'assets/logo_horizontal.png', 
                     fit: BoxFit.contain,
+                    cacheWidth: 800, // <--- ADD THIS to save RAM!
                     errorBuilder: (context, error, stackTrace) {
                        // If filename is wrong, falls back to heart safely
                        return const Icon(Icons.favorite_rounded, size: 64, color: AppTheme.primary);
