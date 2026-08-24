@@ -41,7 +41,7 @@ class ModelDistributionService {
   DistributionStatus get currentStatus => _currentStatus;
 
   Future<bool> _isOnline() async {
-    if (_isOnlineOverride != null) return await _isOnlineOverride!(); // TEST BYPASS
+    if (_isOnlineOverride != null) return await _isOnlineOverride(); // TEST BYPASS
     try {
       final result = await InternetAddress.lookup('google.com');
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
