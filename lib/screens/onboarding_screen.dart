@@ -93,7 +93,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         Expanded(
                           child: Center(
                             child: Image.asset(
-                              page['image'] as String,
+                              'assets/app_icon_mark.png', // <--- FIXED HERE
                               width: MediaQuery.of(context).size.width * 0.85,
                               fit: BoxFit.contain,
                               cacheWidth: 800, // <--- FIX: Forces Flutter to shrink huge AI images in RAM!

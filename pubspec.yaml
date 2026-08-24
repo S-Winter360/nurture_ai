@@ -40,10 +40,10 @@ flutter:
     - assets/clinical/
 
 # --- ADD THIS BLOCK AT THE VERY BOTTOM ---
-flutter_icons:
+flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/logo.png"
+  image_path: "assets/app_icon_mark.png" 
   min_sdk_android: 21
-  adaptive_icon_background: "#0F766E" # Matches your NurtureAI Teal
-  adaptive_icon_foreground: "assets/logo.png"
+  adaptive_icon_background: "#0F766E"
+  adaptive_icon_foreground: "assets/app_icon_mark.png"
