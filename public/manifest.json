@@ -1,0 +1,37 @@
+{
+  "id": "/",
+  "name": "NurtureAI",
+  "short_name": "NurtureAI",
+  "description": "Offline-first maternal and child health companion for pregnancy, immunization, and growth monitoring based on Ghana Health Service protocols.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0f766e",
+  "background_color": "#f8fafc",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "500x500",
+      "type": "image/png"
+    }
+  ]
+}

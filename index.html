@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>NurtureAI</title>
+    <meta name="description" content="Offline-first maternal and child health care companion with deterministic GHS care schedules, resilient background reminders, and voice support" />
+    <meta property="og:title" content="NurtureAI" />
+    <meta property="og:description" content="Offline-first maternal and child health care companion with deterministic GHS care schedules, resilient background reminders, and voice support" />
+    <meta name="theme-color" content="#0f766e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="NurtureAI" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      const isDevEnv = window.location.hostname === 'localhost' || 
+                       window.location.hostname.includes('ais-dev') || 
+                       window.location.port === '3000';
+
+      if ('serviceWorker' in navigator) {
+        if (isDevEnv) {
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (const registration of registrations) {
+              registration.unregister();
+            }
+          });
+          if ('caches' in window) {
+            caches.keys().then((keys) => {
+              for (const key of keys) {
+                if (key.startsWith('nurtureai-')) {
+                  caches.delete(key);
+                }
+              }
+            });
+          }
+        } else if (window.location.protocol.startsWith('http')) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch((err) => {
+              console.warn('SW registration bypassed:', err);
+            });
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "NurtureAI",
+  "description": "Offline-first maternal and child health care companion with deterministic GHS care schedules, resilient background reminders, and voice support",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

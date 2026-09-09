@@ -1,17 +1,31 @@
-# nurture_ai
+# NurtureAI (React Rewrite)
 
-A new Flutter project.
+NurtureAI is a maternal and child care application. This project was originally written in Flutter, and has been ported to a modern React + Vite web application using TypeScript and Tailwind CSS.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-A few resources to get you started if this is your first Flutter project:
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Features Ported
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **App Shell & Navigation:** Bottom navigation with offline persistence indicator.
+- **Home Dashboard:** Personalized greetings, quick care grid, timeline integration.
+- **Maternal Health (Pregnancy Care):** Gestational age timeline, appointment schedules, and weekly insights.
+- **Child Health:** Newborn and Under-5 care screens.
+- **AI Assistant:** Stubbed UI for the on-device NurtureAI clinical companion.
+- **Vaccination & Reminders:** Lists for tracking schedules and notifications.
+
+## Tech Stack
+- React 18
+- React Router DOM
+- Tailwind CSS
+- Lucide React (Icons)
+- Vite
