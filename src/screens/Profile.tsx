@@ -8,6 +8,7 @@ import { dataBackupService } from '../services/data/DataBackupService';
 import { appResilienceService } from '../services/resilience/AppResilienceService';
 import { useAppStore } from '../stores/useAppStore';
 import { SUPPORTED_LANGUAGES, SupportedLanguage, FamilyMemberType, ModelDownloadPolicy } from '../types';
+import { PWAInstallButton } from '../components/PWAInstallButton';
 import { cn } from '../components/Layout';
 
 const Profile = () => {
@@ -860,7 +861,16 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* 7. Reminders & Notification Lead Time */}
+        {/* 7. App Installation */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm dark:bg-slate-800 dark:border-slate-700">
+          <div className="flex items-center gap-2 mb-3">
+            <Globe className="w-5 h-5 text-teal-700 dark:text-teal-500" />
+            <h2 className="font-bold text-slate-900 text-sm dark:text-white">Offline App Installation</h2>
+          </div>
+          <PWAInstallButton variant="button" className="w-full" />
+        </div>
+
+        {/* 8. Reminders & Notification Lead Time */}
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
             <Bell className="w-5 h-5 text-teal-700" />

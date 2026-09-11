@@ -21,7 +21,7 @@ self.addEventListener('install', (event) => {
       return cache.addAll(PRECACHE_URLS).catch((err) => {
         console.warn('Pre-caching assets warning:', err);
       });
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
@@ -51,6 +51,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/@') ||
     url.pathname.startsWith('/src/') ||
     url.pathname.startsWith('/node_modules/') ||
+    url.pathname.startsWith('/api/') ||
     url.pathname.endsWith('.tsx') ||
     url.pathname.endsWith('.ts') ||
     url.search.includes('v=') ||

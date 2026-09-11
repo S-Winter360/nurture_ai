@@ -828,8 +828,17 @@ const Assistant = () => {
               </div>
 
               <div className="flex justify-between py-1 border-b border-slate-100">
+                <span className="text-slate-500">Version:</span>
+                <span className="font-semibold text-slate-800">
+                  {activeModel?.version || '1.0.0-quantized'}
+                </span>
+              </div>
+
+              <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Package Size:</span>
-                <span className="font-medium text-slate-800">~1.5 MB (Quantized)</span>
+                <span className="font-medium text-slate-800">
+                  {activeModel?.sizeBytes ? `${(activeModel.sizeBytes / 1024 / 1024).toFixed(1)} MB` : '~1.5 MB (Quantized)'}
+                </span>
               </div>
 
               <div className="flex justify-between py-1 border-b border-slate-100">
@@ -855,48 +864,57 @@ const Assistant = () => {
               </div>
             </div>
 
-            {/* Download Progress Bar if downloading */}
-            {modelStatus === 'DOWNLOADING' && (
+            {/* Progress UI for active operations */}
+            {(modelStatus === 'CHECKING' || modelStatus === 'DOWNLOADING' || modelStatus === 'VERIFYING') && (
               <div className="space-y-1.5 bg-sky-50 p-3 rounded-xl border border-sky-200">
                 <div className="flex justify-between text-xs text-sky-900 font-semibold">
-                  <span>Downloading Model Package...</span>
-                  <span>{modelProgress.percentage}%</span>
+                  <span>
+                    {modelStatus === 'CHECKING' ? 'Checking compatibility...' : 
+                     modelStatus === 'VERIFYING' ? 'Verifying integrity (SHA-256)...' : 
+                     'Downloading Model Package...'}
+                  </span>
+                  {modelStatus === 'DOWNLOADING' && <span>{modelProgress.percentage}%</span>}
                 </div>
                 <div className="w-full h-2 bg-sky-200 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-sky-600 transition-all duration-300"
-                    style={{ width: `${modelProgress.percentage}%` }}
+                    className={cn(
+                      "h-full bg-sky-600 transition-all duration-300",
+                      (modelStatus === 'CHECKING' || modelStatus === 'VERIFYING') ? "w-full animate-pulse" : ""
+                    )}
+                    style={{ width: modelStatus === 'DOWNLOADING' ? `${modelProgress.percentage}%` : undefined }}
                   />
                 </div>
                 <button
                   onClick={cancelModelAcquisition}
                   className="mt-2 w-full text-center text-xs text-red-600 hover:text-red-700 font-semibold"
                 >
-                  Cancel Download
+                  Cancel
                 </button>
               </div>
             )}
 
-            {/* Error notice if verification failed */}
-            {(modelStatus === 'FAILED' || modelStatus === 'INSUFFICIENT_STORAGE' || modelStatus === 'UNSUPPORTED_DEVICE') && (
+            {/* Error and Info notices */}
+            {(modelStatus === 'FAILED' || modelStatus === 'CANCELLED' || modelStatus === 'INSUFFICIENT_STORAGE' || modelStatus === 'UNSUPPORTED_DEVICE') && (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
                 <div className="font-bold flex items-center gap-1 text-amber-800">
                   <AlertTriangle className="w-3.5 h-3.5" />
                   <span>Model Notice</span>
                 </div>
                 <p>
-                  {modelStatus === 'INSUFFICIENT_STORAGE' 
+                  {modelStatus === 'CANCELLED'
+                    ? 'Acquisition was cancelled.'
+                    : modelStatus === 'INSUFFICIENT_STORAGE' 
                     ? 'Device storage is low. The local deterministic GHS engine remains active.'
                     : modelStatus === 'UNSUPPORTED_DEVICE'
                     ? 'Device lacks WebAssembly/WebCrypto acceleration. Full deterministic guidance remains available.'
-                    : 'AI model verification failed. Unverified model was rejected. Deterministic care engine active.'}
+                    : modelProgress.error || 'AI model acquisition failed. Unverified model was rejected. Deterministic care engine active.'}
                 </p>
               </div>
             )}
 
             {/* Acquisition Action */}
             <div className="pt-2">
-              {modelStatus !== 'ACTIVE' && modelStatus !== 'DOWNLOADING' && (
+              {(modelStatus === 'NOT_AVAILABLE' || modelStatus === 'FAILED' || modelStatus === 'CANCELLED') && (
                 <button
                   onClick={async () => {
                     showToast('Acquiring AI model package...');
@@ -910,7 +928,23 @@ const Assistant = () => {
                   className="w-full bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs py-2.5 rounded-xl shadow flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Download className="w-4 h-4" />
-                  Acquire & Verify AI Model
+                  {modelStatus === 'FAILED' || modelStatus === 'CANCELLED' ? 'Retry Acquisition' : 'Acquire & Verify AI Model'}
+                </button>
+              )}
+
+              {modelStatus === 'AVAILABLE' && (
+                <button
+                  onClick={async () => {
+                    showToast('Activating AI model...');
+                    const ok = await acquireModel(); // Assuming this triggers the local cache load
+                    if (ok) {
+                      showToast('Model activated');
+                    }
+                  }}
+                  className="w-full bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs py-2.5 rounded-xl shadow flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  Activate Model
                 </button>
               )}
 

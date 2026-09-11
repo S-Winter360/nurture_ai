@@ -1,10 +1,11 @@
 import React from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Home, Sparkles, ShieldAlert, User, WifiOff, Globe } from 'lucide-react';
+import { Home, Sparkles, ShieldAlert, User, WifiOff, Globe, DownloadCloud } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAppStore } from '../stores/useAppStore';
 import { SUPPORTED_LANGUAGES } from '../types';
+import { useSWUpdate } from '../hooks/useSWUpdate';
 
 export function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -14,13 +15,29 @@ const Layout = () => {
   const location = useLocation();
   const path = location.pathname;
   const preferences = useAppStore((state) => state.preferences);
+  const { updateAvailable, applyUpdate } = useSWUpdate();
 
   const currentLang = SUPPORTED_LANGUAGES.find(
     (l) => l.code === preferences?.preferredLanguage
   ) || SUPPORTED_LANGUAGES[0];
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <div className="flex flex-col h-screen bg-slate-50 pt-safe">
+      {updateAvailable && (
+        <div className="bg-teal-600 text-white px-4 py-3 flex items-center justify-between shadow-md z-50">
+          <div className="flex items-center gap-2">
+            <DownloadCloud className="w-5 h-5 text-teal-100" />
+            <span className="text-sm font-medium">A new update is available.</span>
+          </div>
+          <button 
+            onClick={applyUpdate}
+            className="px-3 py-1.5 bg-white text-teal-700 text-xs font-bold rounded shadow-sm active:bg-teal-50 transition-colors"
+          >
+            Update Now
+          </button>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <Outlet />
